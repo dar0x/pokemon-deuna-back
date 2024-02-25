@@ -3,14 +3,15 @@ import { AxiosAdapterService } from '../common/axios.adapter/axios.adapter.servi
 import { PokemonListResponse } from './interface/pokemon-list-response.interface';
 import { PokemonDetailResponse } from './interface/pokemon-detail-response.interface';
 import { Observable } from 'rxjs';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class PokemonService {
   constructor(private readonly http: AxiosAdapterService) {}
 
-  findAll(): Observable<PokemonListResponse> {
+  findAll(paginationDto: PaginationDto): Observable<PokemonListResponse> {
     return this.http.get<PokemonListResponse>(
-      'https://pokeapi.co/api/v2/pokemon',
+      `https://pokeapi.co/api/v2/pokemon?limit=${paginationDto.limit}&offset=${paginationDto.offset}`,
     ); // TODO implement url from env
   }
 

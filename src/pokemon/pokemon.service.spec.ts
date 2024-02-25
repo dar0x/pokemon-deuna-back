@@ -4,6 +4,7 @@ import { PokemonListResponse } from './interface/pokemon-list-response.interface
 import { AxiosAdapterService } from '../common/axios.adapter/axios.adapter.service';
 import { of } from 'rxjs';
 import { PokemonDetailResponse } from './interface/pokemon-detail-response.interface';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 describe('PokemonService', () => {
   let service: PokemonService;
@@ -34,11 +35,18 @@ describe('PokemonService', () => {
         },
       ],
     };
+    const queryParams: PaginationDto = {
+      limit: 10,
+      offset: 0,
+    };
     jest.spyOn(axiosAdapter, 'get').mockImplementation(() => of(mockResponse));
 
-    service.findAll().subscribe((response: PokemonListResponse) => {
+    service.findAll(queryParams).subscribe((response: PokemonListResponse) => {
       expect(response).toEqual(mockResponse);
       expect(axiosAdapter.get).toBeCalledTimes(1);
+      expect(axiosAdapter.get).toBeCalledWith(
+        'https://pokeapi.co/api/v2/pokemon?limit=10&offset=0',
+      );
       done();
     });
   });
