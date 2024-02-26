@@ -5,6 +5,7 @@ import { AxiosAdapterService } from '../common/axios.adapter/axios.adapter.servi
 import { of } from 'rxjs';
 import { PokemonDetailResponse } from './interface/pokemon-detail-response.interface';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { ConfigService } from '@nestjs/config';
 
 describe('PokemonService', () => {
   let service: PokemonService;
@@ -12,11 +13,14 @@ describe('PokemonService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PokemonService, AxiosAdapterService],
+      providers: [PokemonService, AxiosAdapterService, ConfigService],
     }).compile();
 
+    const config = module.get<ConfigService>(ConfigService);
     service = module.get<PokemonService>(PokemonService);
     axiosAdapter = module.get<AxiosAdapterService>(AxiosAdapterService);
+
+    config.set('pokemonApi', 'https://pokeapi.co/api');
   });
 
   it('should be defined', () => {
