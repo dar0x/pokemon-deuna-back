@@ -9,7 +9,9 @@ export class ApiKeyAuthMiddleware implements NestMiddleware {
     if (apiKey === process.env.SECRET_KEY) {
       next();
     } else {
-      res.status(401).json({ message: 'Unauthorized' });
+      res
+        .status(401)
+        .json({ message: 'Error de Autorización - Verifique el SECRET_KEY' });
     }
   }
 }

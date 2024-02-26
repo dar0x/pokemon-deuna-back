@@ -3,6 +3,8 @@ import { PokemonController } from './pokemon.controller';
 import { PokemonService } from './pokemon.service';
 import { PokemonListResponse } from './interface/pokemon-list-response.interface';
 import { PokemonDetailResponse } from './interface/pokemon-detail-response.interface';
+import { NotFoundException } from '@nestjs/common';
+import { of, throwError } from 'rxjs';
 
 describe('PokemonController', () => {
   let controller: PokemonController;
@@ -25,7 +27,7 @@ describe('PokemonController', () => {
     is_default: false,
     location_area_encounters: '',
     weight: 0,
-    name: 'Pikachu',
+    name: 'bulbasaur',
     order: 1,
   };
 
@@ -58,8 +60,49 @@ describe('PokemonController', () => {
     expect(service.findAll).toHaveBeenCalled();
   });
 
-  it('should return a single pokemon', async () => {
-    await expect(controller.findOne('1')).resolves.toEqual(detailResponse);
-    expect(service.findOne).toHaveBeenCalledWith(1);
+  it('should return a single pokemon', (done) => {
+    jest.spyOn(service, 'findOne').mockImplementation(() => of(detailResponse));
+
+    controller.findOne('1').subscribe({
+      next: (resp) => {
+        expect(resp).toEqual(detailResponse);
+        done();
+      },
+    });
+  });
+
+  it('should throw a NotFoundException if the pokemon name is pikachu', (done) => {
+    detailResponse.name = 'pikachu';
+    jest.spyOn(service, 'findOne').mockImplementation(() => of(detailResponse));
+
+    controller.findOne('1').subscribe({
+      error: (err) => {
+        expect(err).toBeInstanceOf(NotFoundException);
+        expect(err.response.message).toBe(
+          `El detalle de pikachu ha sido temporalmente deshabilitado`,
+        );
+        done();
+      },
+    });
+  });
+
+  it('should handle 404 error from the service', (done) => {
+    const errorResponse = {
+      response: {
+        status: 404,
+      },
+    };
+
+    jest
+      .spyOn(service, 'findOne')
+      .mockImplementation(() => throwError(() => errorResponse));
+
+    controller.findOne('1').subscribe({
+      error: (err) => {
+        expect(err).toBeInstanceOf(NotFoundException);
+        expect(err.response.message).toBe(`El recurso no existe`);
+        done();
+      },
+    });
   });
 });
